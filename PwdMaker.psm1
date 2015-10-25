@@ -10,10 +10,10 @@ $a = Get-AlphaContent
 .LINK
 #>
     $content = $null
-    
-    For ([int]$i = 97; $i –le 122; $i++) 
+
+    For ([int]$i = 97; $i –le 122; $i++)
     {
-        $content += ,[char][byte]$i 
+        $content += ,[char][byte]$i
     }
 
     $content
@@ -32,15 +32,15 @@ $a = Get-AlphaNumericContent
 #>
 
     $content = $null
-    
-    For ([int]$i = 97; $i –le 122; $i++) 
+
+    For ([int]$i = 97; $i –le 122; $i++)
     {
-        $content += ,[char][byte]$i 
+        $content += ,[char][byte]$i
     }
 
-    For ([int]$i = 48; $i –le 57; $i++) 
+    For ([int]$i = 48; $i –le 57; $i++)
     {
-        $content += ,[char][byte]$i 
+        $content += ,[char][byte]$i
     }
 
     $content
@@ -59,10 +59,10 @@ $a = Get-AsciiContent
 .LINK
 #>
     $content = $NULL
-    
-    For ([int]$i = 33; $i –le 126; $i++) 
+
+    For ([int]$i = 33; $i –le 126; $i++)
     {
-        $content += ,[char][byte]$i 
+        $content += ,[char][byte]$i
     }
 
     $content
@@ -81,10 +81,10 @@ $a = Get-NumericContent
 .LINK
 #>
     $content = $NULL
-    
-    For ([int]$i = 48; $i –le 57; $i++) 
+
+    For ([int]$i = 48; $i –le 57; $i++)
     {
-        $content += ,[char][byte]$i 
+        $content += ,[char][byte]$i
     }
 
     $content
@@ -93,7 +93,7 @@ $a = Get-NumericContent
 <#
 function Get-RandomContent {
 .SYNOPSIS
-Returns an array containing a specified number of items chosen at random from an input set. 
+Returns an array containing a specified number of items chosen at random from an input set.
 
 .PARAMETER FromArray
 A array of strings from which a specified number will be chosen at random.
@@ -176,7 +176,7 @@ Param(
 function Format-StringCase {
 <#
 .SYNOPSIS
-Formats a string according to all upper case, all lowe case, or a random selection of mixed case. 
+Formats a string according to all upper case, all lowe case, or a random selection of mixed case.
 
 .PARAMETER Value
 TODO
@@ -199,7 +199,7 @@ $a = Format-StringCase -Value "THIS IS A TEST"
 Param(
     [Parameter(Mandatory=$true,ValueFromPipeLine=$true,Position=0)]
     [string]$Value,
-        
+
     [Parameter(Mandatory=$false)]
     [ValidateSet("Upper","Lower","Mixed")]
     [string]$UsingCase = "Mixed"
@@ -207,16 +207,16 @@ Param(
 
     switch ($UsingCase)
     {
-        "Upper" 
-        { 
-            ([string]$Value).ToUpper() 
+        "Upper"
+        {
+            ([string]$Value).ToUpper()
         }
-        
-        "Lower" { 
-            ([string]$Value).ToLower() 
+
+        "Lower" {
+            ([string]$Value).ToLower()
         }
-        
-        "Mixed" 
+
+        "Mixed"
         {
             $chars = ([string]$Value).ToLower().ToCharArray()
             for ([int] $i = 0; $i -lt $chars.Length; $i = $i + 2)
@@ -234,8 +234,9 @@ function Format-TranslateChars {
 .SYNOPSIS
 Replaces all occurrences of the characters "I", "E", "S", "L", "O", and "A" with "!", "#", "%",
 "&", "*", and "@" respectively. If the UsingNumbers switch is specified then the characters are
-replace with "1", "3", "5", "7", "0", "2" respectively. If the string contains other characters
-outside of the ones that are to be translated, they will be left alone.
+replace with "1", "3", "5", "7", "0", "2" respectively. If the ReplaceHomoglyphs switch is also
+specified then visually confusing characters will also be replaced. If the string contains other
+characters outside of the ones that are to be translated, they will be left alone.
 
 .PARAMETER Value
 Specifies the string that needs to have the specified characters translated.
@@ -243,47 +244,98 @@ Specifies the string that needs to have the specified characters translated.
 .PARAMETER UsingNumbers
 Specifies that numbers should be used for the translation characters instead of punctuation characters.
 
+.PARAMETER ReplaceHomoglphs
+Homoglyphs are characters that at a quick glance can be confused because of their similarities. A
+couple of examples in the English alphabet are "O" (oh) versus "0" (zero); and "1" (one) versus
+"I" (eye) versus "l" (El). Specifying this switch will replace those characters with less
+visually confusing ones.
+
 .EXAMPLE
 
 "Test" | Format-TranslateChars
+
+T#%t
 
 .EXAMPLE
 
 "Test" | Format-TranslateChars -UsingNumbers
 
+T35t
+
 .EXAMPLE
 
-Format-TranslateChars -Value "TeST"
+Format-TranslateChars -Value "TeST" -ReplaceHomoglyphs
+
+T#%t
+
+.EXAMPLE
+
+"Test"| Format-TranslateChars -UsingNumbers -ReplaceHomoglyphs
+
+T35t
 
 .LINK
+
+[Wikipedia Article on Homoglyphs](https://en.wikipedia.org/wiki/Homoglyph)
 
 #>
 
 Param(
     [Parameter(Mandatory=$true,ValueFromPipeLine=$true,Position=0)]
     [string]$Value,
-        
+
     [Parameter(Mandatory=$false)]
-    [switch]$UsingNumbers
+    [switch]$UsingNumbers,
+
+    [Parameter(Mandatory=$false)]
+    [switch]$ReplaceHomoglyphs
 )
 
     if (-not $UsingNumbers)
     {
-        (((((($Value -ireplace "I","!") `
-                     -ireplace "E","#") `
-                     -ireplace "S","%") `
-                     -ireplace "L","&") `
-                     -ireplace "O","*") `
-                     -ireplace "A","@")
+        if ($ReplaceHomoglyphs)
+        {
+            (((((((($Value -ireplace "I","!") `
+                           -ireplace "1","^") `
+                           -ireplace "L","$") `
+                           -ireplace "E","#") `
+                           -ireplace "S","%") `
+                           -ireplace "O","*") `
+                           -ireplace "0","*") `
+                           -ireplace "A","@")
+        }
+        else
+        {
+            (((((($Value -ireplace "I","!") `
+                         -ireplace "E","#") `
+                         -ireplace "S","%") `
+                         -ireplace "L","&") `
+                         -ireplace "O","*") `
+                         -ireplace "A","@")
+        }
     }
     else
     {
-        (((((($Value -ireplace "I","1") `
-                     -ireplace "E","3") `
-                     -ireplace "S","5") `
-                     -ireplace "L","7") `
-                     -ireplace "O","0") `
-                     -ireplace "A","2")
+      if ($ReplaceHomoglyphs)
+      {
+          (((((((($Value -ireplace "I","6") `
+                         -ireplace "1","7") `
+                         -ireplace "L","8") `
+                         -ireplace "E","3") `
+                         -ireplace "S","5") `
+                         -ireplace "O","4") `
+                         -ireplace "0","9") `
+                         -ireplace "A","2")
+      }
+      else
+      {
+          (((((($Value -ireplace "I","4") `
+                       -ireplace "E","3") `
+                       -ireplace "S","5") `
+                       -ireplace "L","7") `
+                       -ireplace "O","6") `
+                       -ireplace "A","2")
+      }
     }
 }
 
@@ -325,7 +377,7 @@ Param(
 
     [Parameter(Mandatory=$false)]
     [int]$MaximumLength = 8,
-    
+
     [Parameter(Mandatory=$false)]
     [ValidateSet("WordNumberWord","Number","Word","WordNumber","NumberWord")]
     [string]$UsingFormat = "WordNumberWord"
@@ -381,7 +433,7 @@ Param(
 
     } While ($content.Length -le $MaximumLength)
 
-    
+
     While ($content.Length -gt $MaximumLength)
     {
         if (($Word1.Length -ge $Numb1.Length) -And ($Word1.Length -ge $Word2.Length))
@@ -396,11 +448,11 @@ Param(
         {
             $Word2 = $Word2.SubString(0, $Word2.Length - 1)
         }
-        
+
         $content = $Word1 + $Numb1 + $Word2
 
-    }   
-        
+    }
+
     $content
 }
 
@@ -441,7 +493,7 @@ Param(
     [Parameter(Mandatory=$false,Position=1)]
     [ValidateSet("Alpha","Numeric","AlphaNumeric","Ascii")]
     [string]$FromSet = "AlphaNumeric"
-) 
+)
 
     $dataset = "AlphaNumeric"
 
@@ -453,7 +505,7 @@ Param(
         "Ascii"        { $dataset = Get-AsciiContent        }
     }
 
-    For ([int]$i = 1; $i –le $Length; $i++) 
+    For ([int]$i = 1; $i –le $Length; $i++)
     {
         $password += ($dataset | Get-Random)
     }
